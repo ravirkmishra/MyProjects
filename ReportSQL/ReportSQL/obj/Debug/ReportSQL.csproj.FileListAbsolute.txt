@@ -1,0 +1,14 @@
+c:\users\kumar199\documents\visual studio 2013\Projects\ReportSQL\ReportSQL\bin\ReportSQL.dll.config
+c:\users\kumar199\documents\visual studio 2013\Projects\ReportSQL\ReportSQL\bin\ReportSQL.dll
+c:\users\kumar199\documents\visual studio 2013\Projects\ReportSQL\ReportSQL\bin\ReportSQL.pdb
+c:\users\kumar199\documents\visual studio 2013\Projects\ReportSQL\ReportSQL\obj\Debug\ReportSQL.csprojResolveAssemblyReference.cache
+c:\users\kumar199\documents\visual studio 2013\Projects\ReportSQL\ReportSQL\obj\Debug\ReportSQL.dll
+c:\users\kumar199\documents\visual studio 2013\Projects\ReportSQL\ReportSQL\obj\Debug\ReportSQL.pdb
+C:\Ravi\MyProjects\ReportSQL\ReportSQL\bin\ReportSQL.dll.config
+C:\Ravi\MyProjects\ReportSQL\ReportSQL\bin\ReportSQL.dll
+C:\Ravi\MyProjects\ReportSQL\ReportSQL\bin\ReportSQL.pdb
+C:\Ravi\MyProjects\ReportSQL\ReportSQL\obj\Debug\ReportSQL.csprojResolveAssemblyReference.cache
+C:\Ravi\MyProjects\ReportSQL\ReportSQL\obj\Debug\ReportSQL.dll
+C:\Ravi\MyProjects\ReportSQL\ReportSQL\obj\Debug\ReportSQL.pdb
+C:\Ravi\MyProjects\ReportSQL\ReportSQL\bin\Newtonsoft.Json.dll
+C:\Ravi\MyProjects\ReportSQL\ReportSQL\bin\Newtonsoft.Json.xml

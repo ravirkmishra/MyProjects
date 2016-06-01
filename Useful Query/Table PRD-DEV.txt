@@ -1,0 +1,88 @@
+Step 1 :
+
+First Create a Type of table like as below:
+
+CREATE TYPE [dbo].[MyTableType] AS TABLE(
+[apr_id] [int] ,
+	[mod_id] [int] ,
+	[o2c_id] [int] ,
+	[apr_orden] [smallint] ,
+	[apr_cc_responsable] [varchar](50),
+	[apr_responsable] [varchar](100),
+	[apr_estado] [smallint] ,
+	[apr_comentarios] [varchar](500) ,
+	[apr_fecha] [datetime] ,
+	[sis_fecha_aprobacion] [datetime] ,
+	[apn_nivel] [varchar](50),
+	[prn_Modificar] [bit],
+	[apr_motivoRechazo] [smallint] ,
+	[apr_motivoAprobacion] [smallint] NULL,
+	[apr_cc_responsableInicial] [varchar](50),
+	[unn_CodigoUN] [varchar](50)
+)
+
+
+Step 2:
+
+Then create SP which will insert into the required table.
+
+ALTER PROCEDURE [dbo].[InsertTable]
+    @dt MyTableType readonly
+AS
+BEGIN
+	SET IDENTITY_INSERT [dbo].[APROBACIONBackUp2] ON;
+   insert into [dbo].[APROBACIONBackUp2] ([apr_id]  ,
+	[mod_id] ,
+	[o2c_id] ,
+	[apr_orden] ,
+	[apr_cc_responsable],
+	[apr_responsable] ,
+	[apr_estado] ,
+	[apr_comentarios]  ,
+	[apr_fecha],
+	[sis_fecha_aprobacion]  ,
+	[apn_nivel],
+	[prn_Modificar] ,
+	[apr_motivoRechazo]  ,
+	[apr_motivoAprobacion] ,
+	[apr_cc_responsableInicial] ,
+	[unn_CodigoUN] 
+	)
+   select [apr_id], [mod_id] ,
+	[o2c_id] ,
+	[apr_orden] ,
+	[apr_cc_responsable],
+	[apr_responsable] ,
+	[apr_estado] ,
+	[apr_comentarios]  ,
+	[apr_fecha],
+	[sis_fecha_aprobacion]  ,
+	[apn_nivel],
+	[prn_Modificar] ,
+	[apr_motivoRechazo]  ,
+	[apr_motivoAprobacion] ,
+	[apr_cc_responsableInicial] ,
+	[unn_CodigoUN]  from @dt ;
+END
+
+
+Step 3 :
+
+Write ADO.net code in to copy the data from PROD and save it in the Session object.
+
+And write ADO.Net code to paste data through the above SP, as below:
+
+ DataTable dt = new DataTable();
+           
+            dt = ((DataTable)Session["dsSession"]);
+
+
+            string conn = WebConfigurationManager.ConnectionStrings["3656connection"].ConnectionString.ToString();
+            SqlConnection conobj = new SqlConnection(conn);
+            conobj.Open();
+            SqlCommand cmdobj = new SqlCommand("[dbo].[InsertTable]", conobj);
+            cmdobj.CommandType = CommandType.StoredProcedure;
+            SqlParameter tvparam = cmdobj.Parameters.AddWithValue("@dt", dt);
+            tvparam.SqlDbType = SqlDbType.Structured;
+            cmdobj.ExecuteNonQuery();
+            Response.Write("Copy completed");

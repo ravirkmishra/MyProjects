@@ -1,0 +1,214 @@
+--For List of tables and Views
+
+
+SELECT * FROM information_schema.tables
+
+SELECT * FROM information_schema.tables where TABLE_TYPE = 'BASE TABLE'
+
+Select '['+Table_Schema+'].['+table_Name+']' as Table_Structure FROM information_schema.tables where TABLE_TYPE = 'BASE TABLE'
+
+SELECT * FROM information_schema.tables where TABLE_TYPE = 'VIEW'
+==================================================================================================================
+--For list of stored Procedure
+
+select * from sys.procedures where is_ms_shipped = 0
+
+
+select type, name
+from sys.objects
+where type in (
+  'tr', -- triggers
+  'p', -- procedures
+  'if','fn','tf' -- functions
+  --,'fs','ft' -- CLR functions
+  )
+  and is_ms_shipped = 0 -- user-defined
+
+==================================================================================================================
+
+--get List of all Stored procedured in all databases
+
+CREATE TABLE #x(db SYSNAME, s SYSNAME, p SYSNAME);
+
+DECLARE @sql NVARCHAR(MAX) = N'';
+
+SELECT @sql += N'INSERT #x SELECT ''' + name + ''',s.name, p.name
+  FROM ' + QUOTENAME(name) + '.sys.schemas AS s
+  INNER JOIN ' + QUOTENAME(name) + '.sys.procedures AS p
+  ON p.schema_id = s.schema_id;
+' FROM sys.databases WHERE database_id > 4
+
+EXEC sp_executesql @sql;
+
+SELECT db,s,p FROM #x where P like '%SP_ASIGNAR_APROBADORES%' ORDER BY db,s,p 
+
+DROP TABLE #x;
+  
+==================================================================================================================
+  --For list of functions
+    SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_TYPE = 'FUNCTION'
+	
+
+ -- For list of Triggers
+
+   SELECT S2.[name] TableName, S1.[name] TriggerName, CASE WHEN S2.deltrig = s1.id THEN 'Delete' WHEN S2.instrig = s1.id THEN 'Insert' WHEN S2.updtrig = s1.id THEN 'Update' END 
+'TriggerType' , 'S1',s1.*,'S2',s2.* FROM sysobjects S1 JOIN sysobjects S2 ON S1.parent_obj = S2.[id] WHERE S1.xtype='TR'
+
+==================================================================================================================
+
+---Get list of Linked Servers
+
+SELECT *
+FROM sys.Servers a
+LEFT OUTER JOIN sys.linked_logins b ON b.server_id = a.server_id
+LEFT OUTER JOIN sys.server_principals c ON c.principal_id = b.local_principal_id where a.name = 'BOGSUN03'
+
+==================================================================================================================
+
+---to get the details of database objects like Views/SPs based on link server.
+--From Niraj
+
+
+SELECT t2.name, OBJECT_DEFINITION(t1.[object_id]) view_definition 
+
+FROM sys.procedures t1 join sys.servers t2 on 
+
+OBJECT_DEFINITION(t1.[object_id]) like '%LinkedServerName%'
+==========================================================================
+
+SELECT t2.name, OBJECT_DEFINITION(t1.[object_id]) view_definition 
+
+FROM sys.views t1 join sys.servers t2 on 
+
+OBJECT_DEFINITION(t1.[object_id]) like '%LinkedServerName%'
+===========================================================================
+
+SELECT t2.name, OBJECT_DEFINITION(t1.[object_id]) view_definition 
+
+FROM sys.views t1 join sys.servers t2 on 
+
+OBJECT_DEFINITION(t1.[object_id]) like '%['+ t2.name + '].%' 
+
+==================================================================================================================
+
+---to get the details of database objects like Views/SPs depending on Linked server.
+
+SELECT OBJECT_NAME(object_id), *
+FROM sys.sql_modules
+WHERE definition LIKE '%SUNPRD_CONVERSOR%'
+
+
+==================================================================================================================
+
+----Finding dependency of a objects on a table
+
+SELECT '[Admin].[Usuario]' As Table_Name,
+        referencing_schema_name, referencing_entity_name
+       FROM sys.dm_sql_referencing_entities ('[Admin].[Usuario]', 'OBJECT')
+
+==================================================================================================================
+
+----Finding list of all table which has a column name
+
+SELECT COLUMN_NAME, TABLE_NAME 
+FROM INFORMATION_SCHEMA.COLUMNS 
+WHERE COLUMN_NAME LIKE '%incUser%'
+
+
+
+SELECT COLUMN_NAME, TABLE_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH
+FROM INFORMATION_SCHEMA.COLUMNS 
+WHERE COLUMN_NAME LIKE 'Poblaci%'
+
+
+==================================================================================================================
+
+--- get all Primary Key and Foreign key inside the databse
+
+SELECT
+    K_Table = FK.TABLE_NAME,
+    FK_Column = CU.COLUMN_NAME,
+    PK_Table = PK.TABLE_NAME,
+    PK_Column = PT.COLUMN_NAME,
+    Constraint_Name = C.CONSTRAINT_NAME
+FROM
+    INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C
+INNER JOIN INFORMATION_SCHEMA.TABLE_CONSTRAINTS FK
+    ON C.CONSTRAINT_NAME = FK.CONSTRAINT_NAME
+INNER JOIN INFORMATION_SCHEMA.TABLE_CONSTRAINTS PK
+    ON C.UNIQUE_CONSTRAINT_NAME = PK.CONSTRAINT_NAME
+INNER JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE CU
+    ON C.CONSTRAINT_NAME = CU.CONSTRAINT_NAME
+INNER JOIN (
+            SELECT
+                i1.TABLE_NAME,
+                i2.COLUMN_NAME
+            FROM
+                INFORMATION_SCHEMA.TABLE_CONSTRAINTS i1
+            INNER JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE i2
+                ON i1.CONSTRAINT_NAME = i2.CONSTRAINT_NAME
+            WHERE
+                i1.CONSTRAINT_TYPE = 'PRIMARY KEY'
+           ) PT
+    ON PT.TABLE_NAME = PK.TABLE_NAME
+
+
+==================================================================================================================
+Get the Table details like all column names
+
+
+select *
+from INFORMATION_SCHEMA.COLUMNS
+where TABLE_NAME='importacion'
+
+
+==================================================================================================================
+SQl transaction for open query:
+
+
+BEGIN TRAN
+UPDATE importacion set Tablas_Fuente = replace((select Tablas_Fuente from importacion), 'AMRNDHW1680', 'SUNPRD_IB')
+IF 
+@@ROWCOUNT = 42(no of rows getting affected) COMMIT TRAN 
+ELSE 
+ROLLBACK TRAN
+
+==================================================================================================================
+Get details of Deleted Rows:
+
+
+SELECT 
+    * 
+FROM 
+    fn_dblog(NULL, NULL) 
+WHERE 
+    Operation = 'LOP_DELETE_ROWS'
+
+==================================================================================================================
+Get details of Deleted Rows:
+
+DECLARE @TableName sysname
+SET @TableName = 'dbo.Table_1'
+
+SELECT
+    u.[name] AS UserName
+    , l.[Begin Time] AS TransactionStartTime
+FROM
+    fn_dblog(NULL, NULL) l
+INNER JOIN
+    (
+    SELECT
+        [Transaction ID]
+    FROM 
+        fn_dblog(NULL, NULL) 
+    WHERE
+        AllocUnitName LIKE @TableName + '%'
+    AND
+        Operation = 'LOP_DELETE_ROWS'
+    ) deletes
+ON  deletes.[Transaction ID] = l.[Transaction ID]
+INNER JOIN
+    sysusers u
+ON  u.[sid] = l.[Transaction SID]
+
+==================================================================================================================
